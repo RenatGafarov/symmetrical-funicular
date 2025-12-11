@@ -236,3 +236,4 @@ zsdoc/data
 data/
 
 bin
+configs/config.yaml

@@ -1,0 +1,92 @@
+app:
+  name: arbitragebot
+  env: production  # development, staging, production
+  log_level: info
+
+exchanges:
+  binance:
+    enabled: true
+    testnet: false
+    fee_maker: "0.0002"  # 0.02%
+    fee_taker: "0.0004"  # 0.04%
+    rate_limit: 1200     # requests per minute
+    websocket:
+      enabled: true
+      ping_interval: 30s
+      reconnect_delay: 5s
+  bybit:
+    enabled: true
+    testnet: false
+    fee_maker: "0.0001"
+    fee_taker: "0.0006"
+    rate_limit: 600
+    websocket:
+      enabled: true
+      ping_interval: 20s
+      reconnect_delay: 5s
+
+orderbook:
+  max_depth: 20
+  max_age: 100ms
+  redis:
+    enabled: true
+    addr: localhost:6379
+    db: 0
+    pool_size: 10
+
+arbitrage:
+  cross_exchange:
+    enabled: true
+    min_profit_threshold: "0.003"  # 0.3%
+    max_slippage: "0.01"           # 1%
+    min_volume_usd: "100"
+  triangular:
+    enabled: true
+    min_profit_threshold: "0.002"  # 0.2%
+    max_path_length: 3
+    currencies:
+      - BTC
+      - ETH
+      - USDT
+      - BNB
+
+execution:
+  timeout: 5s
+  retry:
+    max_attempts: 3
+    initial_delay: 100ms
+    max_delay: 1s
+    multiplier: 2.0
+
+risk:
+  max_position_per_exchange: "0.20"  # 20%
+  daily_loss_limit: "0.05"           # 5%
+  kill_switch_drawdown: "0.05"       # 5%
+  max_open_orders: 10
+
+pairs:
+  - BTC/USDT
+  - ETH/USDT
+  - BNB/USDT
+  - SOL/USDT
+  - ETH/BTC
+
+notification:
+  telegram:
+    enabled: true
+    notify_opportunities: false  # Too noisy in production
+    notify_executions: true
+    notify_errors: true
+    notify_daily_summary: true
+
+metrics:
+  prometheus:
+    enabled: true
+    port: 9090
+    path: /metrics
+
+server:
+  http:
+    port: 8080
+    read_timeout: 10s
+    write_timeout: 10s

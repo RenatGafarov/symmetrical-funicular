@@ -103,7 +103,8 @@ arbitragebot/
 ├── scripts/
 │   ├── setup.sh                       # Environment setup
 │   └── deploy.sh                      # Deployment script
-├── tests/
+├── tests/                             # All tests (external to packages)
+│   ├── config/                        # Config package tests
 │   ├── integration/                   # Integration tests
 │   ├── e2e/                           # End-to-end tests
 │   └── mocks/                         # Generated mocks
@@ -676,6 +677,32 @@ type Worker struct {
 ---
 
 ## Testing Strategy
+
+### Test Location
+
+All tests are placed in the `tests/` directory, organized by package:
+
+```
+tests/
+├── config/           # pkg/config tests
+├── integration/      # Integration tests (require external services)
+├── e2e/              # End-to-end tests
+└── mocks/            # Generated mocks
+```
+
+**Convention:** Test files use `_test` package suffix for black-box testing:
+```go
+package config_test  // tests pkg/config from external perspective
+
+import "arbitragebot/pkg/config"
+```
+
+Run all tests:
+```bash
+go test ./...                           # All tests
+go test ./tests/config/...              # Config tests only
+go test -tags=integration ./tests/...   # Integration tests
+```
 
 ### Unit Tests
 

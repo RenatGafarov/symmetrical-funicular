@@ -42,11 +42,27 @@ Optional sections can be omitted entirely. If not specified, they will be `nil` 
 
 ### Environment Variables
 
-Config values can be overridden with environment variables using `ARBITRAGE_` prefix:
+Exchange credentials (never commit to repo):
 
 ```bash
-export ARBITRAGE_APP_LOG_LEVEL=debug
-export ARBITRAGE_SERVER_HTTP_PORT=9000
+export BINANCE_API_KEY=your_api_key
+export BINANCE_API_SECRET=your_api_secret
+export BYBIT_API_KEY=your_api_key
+export BYBIT_API_SECRET=your_api_secret
+```
+
+Telegram notifications:
+
+```bash
+export TELEGRAM_BOT_TOKEN=your_bot_token
+export TELEGRAM_CHAT_ID=your_chat_id
+```
+
+Redis (if not using defaults):
+
+```bash
+export REDIS_ADDR=localhost:6379
+export REDIS_PASSWORD=your_password
 ```
 
 ## CLI Flags

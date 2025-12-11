@@ -1,3 +1,10 @@
+// Package main is the entry point for the arbitrage bot application.
+// It parses command-line flags, loads configuration, and starts the bot.
+//
+// Usage:
+//
+//	arbitragebot --config configs/config.yaml
+//	arbitragebot --config configs/config.yaml --dry-run
 package main
 
 import (
@@ -8,16 +15,21 @@ import (
 	"arbitragebot/pkg/config"
 )
 
+// Command-line flags.
 var (
+	// configPath is the path to the YAML configuration file.
 	configPath string
-	dryRun     bool
+	// dryRun enables paper trading mode (no real orders).
+	dryRun bool
 )
 
+// init registers command-line flags.
 func init() {
 	flag.StringVar(&configPath, "config", "configs/config.yaml", "path to config file")
 	flag.BoolVar(&dryRun, "dry-run", false, "run in dry-run mode (paper trading)")
 }
 
+// main is the application entry point.
 func main() {
 	flag.Parse()
 

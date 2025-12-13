@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"arbitragebot/pkg/config"
 )
 
@@ -18,8 +20,37 @@ func createTempConfig(t *testing.T, content string) string {
 	return path
 }
 
+// setExchangeEnvVars sets API credentials for exchanges in tests.
+// Returns a cleanup function that restores original values.
+func setExchangeEnvVars(t *testing.T, exchanges ...string) func() {
+	t.Helper()
+	original := make(map[string]string)
+
+	for _, ex := range exchanges {
+		keyVar := ex + "_API_KEY"
+		secretVar := ex + "_API_SECRET"
+
+		original[keyVar] = os.Getenv(keyVar)
+		original[secretVar] = os.Getenv(secretVar)
+
+		os.Setenv(keyVar, "test-api-key")
+		os.Setenv(secretVar, "test-api-secret")
+	}
+
+	return func() {
+		for k, v := range original {
+			if v == "" {
+				os.Unsetenv(k)
+			} else {
+				os.Setenv(k, v)
+			}
+		}
+	}
+}
+
 func TestLoad_FullConfig(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -223,7 +254,8 @@ server:
 }
 
 func TestLoad_MinimalConfig(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -275,7 +307,8 @@ pairs:
 }
 
 func TestLoad_PartialArbitrage(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -315,7 +348,8 @@ pairs:
 }
 
 func TestLoad_PartialOrderbook(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -348,9 +382,8 @@ pairs:
 	if cfg.Orderbook.MaxDepth != 50 {
 		t.Errorf("orderbook.max_depth = %d, want 50", cfg.Orderbook.MaxDepth)
 	}
-	if !cfg.Orderbook.Redis.Enabled {
-		// Redis.Enabled defaults to false (zero value)
-	}
+	// Redis.Enabled defaults to false (zero value)
+	assert.False(t, cfg.Orderbook.Redis.Enabled)
 }
 
 func TestLoad_ValidationError_MissingAppName(t *testing.T) {
@@ -504,7 +537,8 @@ app:
 }
 
 func TestConfig_IsDevelopment(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -536,7 +570,8 @@ pairs:
 }
 
 func TestConfig_IsProduction(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -568,7 +603,8 @@ pairs:
 }
 
 func TestConfig_EnabledExchanges(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE", "BYBIT")
+	defer cleanup()
 
 	content := `
 app:
@@ -621,7 +657,8 @@ pairs:
 }
 
 func TestLoad_DurationParsing(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE")
+	defer cleanup()
 
 	content := `
 app:
@@ -698,7 +735,8 @@ pairs:
 }
 
 func TestLoad_MultipleExchanges(t *testing.T) {
-	t.Parallel()
+	cleanup := setExchangeEnvVars(t, "BINANCE", "BYBIT")
+	defer cleanup()
 
 	content := `
 app:

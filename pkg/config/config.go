@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -52,6 +53,10 @@ type ExchangeConfig struct {
 	Enabled bool `mapstructure:"enabled"`
 	// Testnet enables testnet/sandbox mode for the exchange.
 	Testnet bool `mapstructure:"testnet"`
+	// APIKey is the exchange API key (loaded from environment variable).
+	APIKey string
+	// APISecret is the exchange API secret (loaded from environment variable).
+	APISecret string
 	// FeeMaker is the maker fee as a decimal string (e.g., "0.001" for 0.1%).
 	FeeMaker string `mapstructure:"fee_maker"`
 	// FeeTaker is the taker fee as a decimal string (e.g., "0.001" for 0.1%).
@@ -212,6 +217,7 @@ type HTTPConfig struct {
 
 // Load reads configuration from a YAML file at the given path.
 // It also supports environment variable overrides with the ARBITRAGE_ prefix.
+// API keys are loaded from environment variables: {EXCHANGE}_API_KEY, {EXCHANGE}_API_SECRET.
 // Returns an error if the file cannot be read, parsed, or fails validation.
 func Load(path string) (*Config, error) {
 	v := viper.New()
@@ -232,11 +238,30 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
+	// Load API credentials from environment variables
+	cfg.loadExchangeCredentials()
+
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("config validation failed: %w", err)
 	}
 
 	return &cfg, nil
+}
+
+// loadExchangeCredentials loads API keys from environment variables.
+// Format: {EXCHANGE}_API_KEY, {EXCHANGE}_API_SECRET (e.g., BINANCE_API_KEY).
+func (c *Config) loadExchangeCredentials() {
+	for name, ex := range c.Exchanges {
+		if !ex.Enabled {
+			continue
+		}
+
+		envPrefix := strings.ToUpper(name)
+		ex.APIKey = os.Getenv(envPrefix + "_API_KEY")
+		ex.APISecret = os.Getenv(envPrefix + "_API_SECRET")
+
+		c.Exchanges[name] = ex
+	}
 }
 
 // Validate checks that the configuration is valid.
@@ -256,6 +281,10 @@ func (c *Config) Validate() error {
 			enabledExchanges++
 			if ex.FeeMaker == "" || ex.FeeTaker == "" {
 				return fmt.Errorf("exchange %s: fee_maker and fee_taker are required", name)
+			}
+			if ex.APIKey == "" || ex.APISecret == "" {
+				return fmt.Errorf("exchange %s: API credentials not found (set %s_API_KEY and %s_API_SECRET env vars)",
+					name, strings.ToUpper(name), strings.ToUpper(name))
 			}
 		}
 	}

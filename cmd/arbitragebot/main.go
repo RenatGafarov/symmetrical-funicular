@@ -10,9 +10,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"arbitragebot/pkg/config"
+
+	"github.com/joho/godotenv"
 )
 
 // Command-line flags.
@@ -23,13 +26,16 @@ var (
 	dryRun bool
 )
 
-// init registers command-line flags.
 func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("⚠️  No .env file found, using system environment variables")
+	} else {
+		log.Println("✅ .env file loaded successfully")
+	}
 	flag.StringVar(&configPath, "config", "configs/config.yaml", "path to config file")
 	flag.BoolVar(&dryRun, "dry-run", false, "run in dry-run mode (paper trading)")
 }
 
-// main is the application entry point.
 func main() {
 	flag.Parse()
 

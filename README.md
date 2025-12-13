@@ -42,13 +42,26 @@ Optional sections can be omitted entirely. If not specified, they will be `nil` 
 
 ### Environment Variables
 
-Exchange credentials (never commit to repo):
+Exchange credentials (never commit to repo).
+
+Variable names are formed as `{EXCHANGE_NAME}_API_KEY` and `{EXCHANGE_NAME}_API_SECRET`, where `{EXCHANGE_NAME}` is the uppercase name of the exchange from `config.yaml`:
 
 ```bash
+# For exchanges.binance in config.yaml:
 export BINANCE_API_KEY=your_api_key
 export BINANCE_API_SECRET=your_api_secret
+
+# For exchanges.bybit in config.yaml:
 export BYBIT_API_KEY=your_api_key
 export BYBIT_API_SECRET=your_api_secret
+```
+
+Or use `.env` file (recommended for local development):
+
+```bash
+cp .env.example .env
+# Edit .env with your real API keys
+source .env
 ```
 
 Telegram notifications:

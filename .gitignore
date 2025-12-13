@@ -236,5 +236,5 @@ zsdoc/data
 data/
 
 bin/
-arbitragebot
+./arbitragebot
 configs/config.yaml
